@@ -34,6 +34,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setTokenState(null);
     setUser(null);
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   }, []);
 
   // Initialize from localStorage

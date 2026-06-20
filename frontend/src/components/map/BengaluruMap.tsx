@@ -243,7 +243,7 @@ function renderStationCard(station: {
 }
 
 const MAP_CONFIG = {
-  style: 'mapbox://styles/mapbox/standard',
+  style: 'mapbox://styles/mapbox/dark-v11',
   center: [77.5946, 12.9716] as [number, number],
   zoom: 15,
   pitch: 60,
@@ -501,28 +501,34 @@ export function BengaluruMap({
       {/* Layer controls */}
       {showLayerControls && (
         <div style={{
-          position: 'absolute', bottom: '16px', left: '16px',
-          background: 'var(--color-card)', border: '1px solid var(--color-border)',
-          borderRadius: '10px', padding: '10px 14px',
-          display: 'flex', flexDirection: 'column', gap: '6px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          position: 'absolute', bottom: '24px', left: '24px',
+          background: '#111111', border: '1px solid #333333',
+          borderRadius: '16px', padding: '16px',
+          display: 'flex', flexDirection: 'column', gap: '12px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+          zIndex: 10,
         }}>
-          {[
-            { key: 'stations', label: '● Station Markers' },
-            { key: 'incidents', label: '● Incident Pins' },
-            { key: 'heatmap', label: '○ Risk Heatmap' },
-            { key: 'coverage', label: '○ Coverage Radius' },
-          ].map(({ key, label }) => (
-            <label key={key} className="map-checkbox-row">
-              <input
-                type="checkbox"
-                checked={layers[key as keyof typeof layers]}
-                onChange={e => setLayers(l => ({ ...l, [key]: e.target.checked }))}
-                className="map-checkbox"
-              />
-              {label}
-            </label>
-          ))}
+          <span style={{ fontSize: '11px', fontWeight: 700, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Map Layers
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {[
+              { key: 'stations', label: 'Station Markers' },
+              { key: 'incidents', label: 'Incident Pins' },
+              { key: 'heatmap', label: 'Risk Heatmap' },
+              { key: 'coverage', label: 'Coverage Radius' },
+            ].map(({ key, label }) => (
+              <label key={key} className="map-checkbox-row" style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 500, margin: 0, padding: 0 }}>
+                <input
+                  type="checkbox"
+                  checked={layers[key as keyof typeof layers]}
+                  onChange={e => setLayers(l => ({ ...l, [key]: e.target.checked }))}
+                  className="map-checkbox"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
         </div>
       )}
     </div>
