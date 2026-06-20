@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import useSWR from 'swr';
 import { PageHeading } from '@/components/layout/PageHeading';
 import { LoadingState, ErrorState, EmptyState } from '@/components/shared/LoadingState';
@@ -16,7 +16,7 @@ import type { ApiError } from '@/lib/api';
  * - Confirm dialog before any inventory reduction.
  * - Available counts are read-only (calculated from total minus deployed).
  */
-export default function ResourcesPage() {
+function ResourcesContent({ hideHeading = false }: { hideHeading?: boolean } = {}) {
   const params = useSearchParams();
   const defaultStation = params.get('station') ?? '';
 
@@ -74,25 +74,27 @@ export default function ResourcesPage() {
 
   return (
     <>
-      <PageHeading title={
-        <>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              backgroundColor: '#CDFF50',
-              flexShrink: 0,
-            }}
-          >
-            <Package size={18} color="#111111" strokeWidth={2.5} />
-          </span>
-          Resource Command Center
-        </>
-      } />
+      {!hideHeading && (
+        <PageHeading title={
+          <>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                backgroundColor: '#CDFF50',
+                flexShrink: 0,
+              }}
+            >
+              <Package size={18} color="#111111" strokeWidth={2.5} />
+            </span>
+            Resource Command Center
+          </>
+        } />
+      )}
       <div className="flex-1 px-7 pb-7 overflow-auto">
           {/* Station selector */}
           <div style={{ marginBottom: '20px', maxWidth: '400px' }}>
@@ -226,5 +228,13 @@ export default function ResourcesPage() {
           )}
       </div>
     </>
+  );
+}
+
+export default function ResourcesPage({ hideHeading = false }: { hideHeading?: boolean } = {}) {
+  return (
+    <Suspense fallback={<LoadingState message="Loading resources..." />}>
+      <ResourcesContent hideHeading={hideHeading} />
+    </Suspense>
   );
 }

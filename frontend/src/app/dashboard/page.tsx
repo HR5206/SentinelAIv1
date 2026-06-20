@@ -201,10 +201,10 @@ export default function DashboardPage() {
         onChange={setTab}
       />
 
-      {tab === 'Analytics' && <div className="flex-1 overflow-auto"><AnalyticsPage /></div>}
-      {tab === 'Resources' && <div className="flex-1 overflow-auto"><ResourcesPage /></div>}
-      {tab === 'Stations' && <div className="flex-1 overflow-auto"><StationsPage /></div>}
-      {tab === 'History' && <div className="flex-1 overflow-auto"><HistoryPage /></div>}
+      {tab === 'Analytics' && <div className="flex-1 overflow-auto"><AnalyticsPage hideHeading={true} /></div>}
+      {tab === 'Resources' && <div className="flex-1 overflow-auto"><ResourcesPage hideHeading={true} /></div>}
+      {tab === 'Stations' && <div className="flex-1 overflow-auto"><StationsPage hideHeading={true} /></div>}
+      {tab === 'History' && <div className="flex-1 overflow-auto"><HistoryPage hideHeading={true} /></div>}
 
       {tab === 'Overview' && (
         <div className="flex-1 px-7 pb-7 grid grid-cols-12 gap-4 overflow-auto">

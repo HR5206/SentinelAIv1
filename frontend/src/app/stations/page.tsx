@@ -9,7 +9,7 @@ import { useStations } from '@/hooks/useStations';
 
 type FilterLevel = 'all' | 'high' | 'mid' | 'low';
 
-export default function StationsPage() {
+export default function StationsPage({ hideHeading = false }: { hideHeading?: boolean } = {}) {
   const { stations, isLoading, error, mutate } = useStations(30000);
   const router = useRouter();
   const [search, setSearch] = useState('');
@@ -35,25 +35,27 @@ export default function StationsPage() {
 
   return (
     <>
-      <PageHeading title={
-        <>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              backgroundColor: '#CDFF50',
-              flexShrink: 0,
-            }}
-          >
-            <Radio size={18} color="#111111" strokeWidth={2.5} />
-          </span>
-          Station Network
-        </>
-      } />
+      {!hideHeading && (
+        <PageHeading title={
+          <>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                backgroundColor: '#CDFF50',
+                flexShrink: 0,
+              }}
+            >
+              <Radio size={18} color="#111111" strokeWidth={2.5} />
+            </span>
+            Station Network
+          </>
+        } />
+      )}
       <div className="flex-1 px-7 pb-7 overflow-auto">
 
           {/* ── Page heading ─────────────────────────────────────────────── */}

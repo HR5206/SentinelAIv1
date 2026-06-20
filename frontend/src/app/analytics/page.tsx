@@ -17,7 +17,7 @@ import { useEffect } from 'react';
  * Analytics Dashboard — SUPERVISOR and ADMIN roles only.
  * Charts use Recharts with design system colors. No 3D, no pie, no donut.
  */
-export default function AnalyticsPage() {
+export default function AnalyticsPage({ hideHeading = false }: { hideHeading?: boolean } = {}) {
   const { hasRole, isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -35,7 +35,7 @@ export default function AnalyticsPage() {
 
   return (
     <>
-      <PageHeading title="Analytics" />
+      {!hideHeading && <PageHeading title="Analytics" />}
       <div className="flex-1 px-7 pb-7 overflow-auto">
 
           {/* Row 1: Model accuracy KPIs */}

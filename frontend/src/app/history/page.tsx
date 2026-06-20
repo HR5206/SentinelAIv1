@@ -13,7 +13,7 @@ import type { ApiError } from '@/lib/api';
  * Min 3 characters before search enabled.
  * Low confidence warning when < 3 results.
  */
-export default function HistoryPage() {
+export default function HistoryPage({ hideHeading = false }: { hideHeading?: boolean }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<HistoricalSearchResponse | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -52,25 +52,27 @@ export default function HistoryPage() {
 
   return (
     <>
-      <PageHeading title={
-        <>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              backgroundColor: '#CDFF50',
-              flexShrink: 0,
-            }}
-          >
-            <Clock size={18} color="#111111" strokeWidth={2.5} />
-          </span>
-          Historical Incident Viewer
-        </>
-      } />
+      {!hideHeading && (
+        <PageHeading title={
+          <>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                backgroundColor: '#CDFF50',
+                flexShrink: 0,
+              }}
+            >
+              <Clock size={18} color="#111111" strokeWidth={2.5} />
+            </span>
+            Historical Incident Viewer
+          </>
+        } />
+      )}
       <div className="flex-1 px-7 pb-7 overflow-auto">
 
           {/* Search bar */}
