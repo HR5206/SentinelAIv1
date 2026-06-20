@@ -243,7 +243,7 @@ function renderStationCard(station: {
 }
 
 const MAP_CONFIG = {
-  style: 'mapbox://styles/mapbox/dark-v11',
+  style: 'mapbox://styles/mapbox/navigation-night-v1',
   center: [77.5946, 12.9716] as [number, number],
   zoom: 15,
   pitch: 60,
