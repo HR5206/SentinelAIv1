@@ -21,60 +21,56 @@ import { Station, RiskZone, Incident } from '@/lib/api';
 
 function createStationMarker(readinessScore: number): HTMLElement {
   const color =
-    readinessScore > 70  ? '#16A34A' :
-    readinessScore >= 40 ? '#EA580C' :
-    '#DC2626';
+    readinessScore > 70  ? '#CDFF50' : // Neon Lime
+    readinessScore >= 40 ? '#FF9900' : // Neon Orange
+    '#FF3366';                         // Neon Pink/Red
 
   const wrapper = document.createElement('div');
   wrapper.style.cssText = `
     position: relative;
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
   `;
 
-  // Soft radius ring
-  const ring = document.createElement('div');
-  ring.style.cssText = `
+  // Soft neon glow
+  const glow = document.createElement('div');
+  glow.style.cssText = `
     position: absolute;
     inset: 0;
     border-radius: 50%;
     background: ${color};
-    opacity: 0.15;
+    opacity: 0.25;
+    filter: blur(4px);
   `;
 
-  // Circle pin body — stations use circle, not teardrop
+  // Sharp ring
   const pin = document.createElement('div');
   pin.innerHTML = `
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Outer circle -->
-      <circle cx="11" cy="11" r="11" fill="${color}" />
-      <!-- White ring inside -->
-      <circle cx="11" cy="11" r="7" fill="white" opacity="0.25" />
-      <!-- Center dot -->
-      <circle cx="11" cy="11" r="4" fill="white" />
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="8" fill="#111111" stroke="${color}" stroke-width="2.5" />
+      <circle cx="10" cy="10" r="3" fill="${color}" />
     </svg>
   `;
   pin.style.cssText = `
     position: relative;
     z-index: 1;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.30));
     line-height: 0;
   `;
 
-  wrapper.appendChild(ring);
+  wrapper.appendChild(glow);
   wrapper.appendChild(pin);
   return wrapper;
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
-  P1: '#DC2626',
-  P2: '#D97706',
-  P3: '#CA8A04',
-  P4: '#2563EB',
+  P1: '#FF3366', // Neon Red/Pink
+  P2: '#FF9900', // Neon Orange
+  P3: '#FFCC00', // Neon Yellow
+  P4: '#00E5FF', // Neon Cyan
 };
 
 function createIncidentMarker(priority: string): HTMLElement {
@@ -83,43 +79,39 @@ function createIncidentMarker(priority: string): HTMLElement {
   const wrapper = document.createElement('div');
   wrapper.style.cssText = `
     position: relative;
-    width: 40px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
   `;
 
-  const ring = document.createElement('div');
-  ring.style.cssText = `
+  const glow = document.createElement('div');
+  glow.style.cssText = `
     position: absolute;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: 24px;
+    height: 24px;
     background: ${color};
-    opacity: 0.15;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    opacity: 0.3;
+    filter: blur(5px);
+    transform: rotate(45deg);
   `;
 
   const pin = document.createElement('div');
   pin.innerHTML = `
-    <svg width="18" height="24" viewBox="0 0 20 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 0C4.477 0 0 4.477 0 10C0 16.627 10 26 10 26C10 26 20 16.627 20 10C20 4.477 15.523 0 10 0Z"
-        fill="${color}" />
-      <circle cx="10" cy="10" r="4" fill="white" />
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="2" width="11" height="11" transform="rotate(45 10 2)" fill="#111111" stroke="${color}" stroke-width="2.5" />
+      <circle cx="10" cy="10" r="2.5" fill="${color}" />
     </svg>
   `;
   pin.style.cssText = `
     position: relative;
     z-index: 1;
-    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.28));
     line-height: 0;
   `;
 
-  wrapper.appendChild(ring);
+  wrapper.appendChild(glow);
   wrapper.appendChild(pin);
   return wrapper;
 }
