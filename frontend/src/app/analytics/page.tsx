@@ -5,8 +5,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopBar } from '@/components/layout/TopBar';
+import { PageHeading } from '@/components/layout/PageHeading';
 import { KPICard } from '@/components/shared/KPICard';
 import { LoadingState, ErrorState } from '@/components/shared/LoadingState';
 import { useAuth } from '@/lib/auth';
@@ -35,11 +34,9 @@ export default function AnalyticsPage() {
   const { data: corridors, isLoading: corridorsLoading } = useSWR('/analytics/corridors', api.analytics.corridors);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="main-area">
-        <TopBar title="Analytics" />
-        <main className="page-content">
+    <>
+      <PageHeading title="Analytics" />
+      <div className="flex-1 px-7 pb-7 overflow-auto">
 
           {/* Row 1: Model accuracy KPIs */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
@@ -73,11 +70,11 @@ export default function AnalyticsPage() {
               {trendsLoading ? <LoadingState message="Loading trends…" /> : (
                 <ResponsiveContainer width="100%" height={240}>
                   <LineChart data={trends ?? []}>
-                    <CartesianGrid stroke="#E2E4E0" strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#7A7A7A' }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: '#7A7A7A' }} tickLine={false} axisLine={false} />
+                    <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--muted)' }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'var(--muted)' }} tickLine={false} axisLine={false} />
                     <Tooltip
-                      contentStyle={{ background: '#F8F9F7', border: '1px solid #E2E4E0', borderRadius: '8px', fontSize: '12px' }}
+                      contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '12px' }}
                     />
                     <Legend wrapperStyle={{ fontSize: '11px' }} />
                     <Line type="monotone" dataKey="P1" stroke="#E53E3E" strokeWidth={2} dot={false} />
@@ -95,11 +92,11 @@ export default function AnalyticsPage() {
               {histLoading ? <LoadingState message="Loading histogram…" /> : (
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={histogram ?? []}>
-                    <CartesianGrid stroke="#E2E4E0" strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: '#7A7A7A' }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: '#7A7A7A' }} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{ background: '#F8F9F7', border: '1px solid #E2E4E0', borderRadius: '8px', fontSize: '12px' }} />
-                    <Bar dataKey="count" fill="#151515" radius={[3, 3, 0, 0]} />
+                    <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--muted)' }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'var(--muted)' }} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '12px' }} />
+                    <Bar dataKey="count" fill="var(--lime)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -108,7 +105,7 @@ export default function AnalyticsPage() {
 
           {/* Row 3: Corridor performance table */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)', fontSize: '13px', fontWeight: 700 }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', fontSize: '14px', fontWeight: 700 }}>
               Corridor Performance
             </div>
             {corridorsLoading ? (
@@ -131,7 +128,7 @@ export default function AnalyticsPage() {
                       <td>{c.incident_count}</td>
                       <td>{Math.round(c.avg_resolution_minutes)} min</td>
                       <td>
-                        <span style={{ color: c.p1_rate > 0.5 ? 'var(--p1)' : 'var(--color-text-primary)' }}>
+                        <span style={{ color: c.p1_rate > 0.5 ? 'var(--p1)' : 'var(--ink)' }}>
                           {(c.p1_rate * 100).toFixed(0)}%
                         </span>
                       </td>
@@ -142,8 +139,7 @@ export default function AnalyticsPage() {
               </table>
             )}
           </div>
-        </main>
       </div>
-    </div>
+    </>
   );
 }

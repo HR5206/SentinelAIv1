@@ -18,7 +18,7 @@ export function ExplainabilityList({ reasons, label = 'Reasoning' }: Explainabil
   if (!reasons || reasons.length === 0) return null;
 
   return (
-    <div style={{ border: '1px solid var(--color-border)', borderRadius: '10px', overflow: 'hidden' }}>
+    <div style={{ border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
       <button
         onClick={() => setExpanded(e => !e)}
         style={{
@@ -32,7 +32,7 @@ export function ExplainabilityList({ reasons, label = 'Reasoning' }: Explainabil
           cursor: 'pointer',
           fontSize: '12px',
           fontWeight: 600,
-          color: 'var(--color-text-secondary)',
+          color: 'var(--muted)',
           letterSpacing: '0.04em',
           textTransform: 'uppercase',
         }}
@@ -45,8 +45,8 @@ export function ExplainabilityList({ reasons, label = 'Reasoning' }: Explainabil
         <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {reasons.map((reason, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-              <Check size={12} style={{ color: 'var(--color-success)', marginTop: '2px', flexShrink: 0 }} />
-              <span style={{ fontSize: '12px', color: 'var(--color-text-primary)', lineHeight: '1.5' }}>
+              <Check size={12} style={{ color: 'var(--ok)', marginTop: '2px', flexShrink: 0 }} />
+              <span style={{ fontSize: '12px', color: 'var(--ink)', lineHeight: '1.5' }}>
                 {reason}
               </span>
             </div>

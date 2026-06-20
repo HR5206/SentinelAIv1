@@ -2,12 +2,11 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopBar } from '@/components/layout/TopBar';
+import { PageHeading } from '@/components/layout/PageHeading';
 import { ReadinessBar } from '@/components/shared/ReadinessBar';
 import { LoadingState, ErrorState } from '@/components/shared/LoadingState';
 import { api, StationCandidate, DispatchBody } from '@/lib/api';
-import { Check, AlertTriangle, Loader2 } from 'lucide-react';
+import { Check, AlertTriangle, Loader2, Users, Car, Truck, Shield } from 'lucide-react';
 import type { ApiError } from '@/lib/api';
 
 /**
@@ -30,7 +29,6 @@ export default function DispatchPage() {
   const candidates = readiness?.stations.slice(0, 3) ?? [];
   const recommended = candidates[0];
 
-  // Confirm dialog state
   const [showConfirm, setShowConfirm] = useState(false);
   const [showOverrideDrawer, setShowOverrideDrawer] = useState(false);
   const [overrideStation, setOverrideStation] = useState('');
@@ -43,7 +41,6 @@ export default function DispatchPage() {
     if (!recommended) return;
     setIsDispatching(true);
     setDispatchError('');
-
     try {
       const body: DispatchBody = {
         incident_id: incidentId,
@@ -72,7 +69,6 @@ export default function DispatchPage() {
     if (overrideReason.length < 20) return;
     setIsDispatching(true);
     setDispatchError('');
-
     try {
       const body: DispatchBody = {
         incident_id: incidentId,
@@ -93,48 +89,65 @@ export default function DispatchPage() {
     }
   };
 
-  if (isLoading) return <PageShell><LoadingState message="Loading station data…" /></PageShell>;
-  if (error) return <PageShell><ErrorState message="Failed to load stations." /></PageShell>;
+  if (isLoading) return <PageShell incidentId={incidentId}><LoadingState message="Loading station data…" /></PageShell>;
+  if (error)     return <PageShell incidentId={incidentId}><ErrorState message="Failed to load stations." /></PageShell>;
+
   if (dispatchSuccess) return (
-    <PageShell>
-      <div style={{ padding: '48px', textAlign: 'center' }}>
-        <div style={{ fontSize: '32px', marginBottom: '16px' }}>✅</div>
-        <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Dispatch Confirmed</h2>
-        <p style={{ color: 'var(--color-text-secondary)', marginTop: '8px', fontSize: '13px' }}>Redirecting to dashboard…</p>
+    <PageShell incidentId={incidentId}>
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', gap: '16px', padding: '64px',
+      }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%',
+          background: 'var(--lime)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Check size={28} style={{ color: 'var(--ink)' }} />
+        </div>
+        <h2 style={{ fontSize: '20px', fontWeight: 700 }}>Dispatch Confirmed</h2>
+        <p style={{ color: 'var(--muted)', fontSize: '13px' }}>Redirecting to dashboard…</p>
       </div>
     </PageShell>
   );
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="main-area">
-        <TopBar title={`Dispatch — ${incidentId}`} />
-        <main className="page-content">
-          <div style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <>
+      <PageHeading title={`Dispatch — ${incidentId}`} />
+      <div className="flex-1 px-7 pb-7 overflow-auto">
+          <div style={{ maxWidth: '820px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
             {/* Recommended station */}
             {recommended && (
-              <div className="card">
+              <div className="card" style={{ background: 'var(--lime)', border: 'none' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                   <div>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
-                      Recommended Station
+                    <div style={{
+                      fontSize: '10px', fontWeight: 700, color: 'rgba(17,17,17,0.5)',
+                      textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px',
+                    }}>
+                      AI Recommended Station
                     </div>
-                    <h2 style={{ fontSize: '18px', fontWeight: 700 }}>{recommended.station_name}</h2>
+                    <h2 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                      {recommended.station_name}
+                    </h2>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Readiness Score</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700 }}>{Math.round(Number(recommended.readiness_score))}</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(17,17,17,0.5)', marginBottom: '2px' }}>
+                      Readiness
+                    </div>
+                    <div style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-0.03em' }}>
+                      {Math.round(Number(recommended.readiness_score))}
+                    </div>
                   </div>
                 </div>
 
                 <ReadinessBar score={Number(recommended.readiness_score)} />
 
-                <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                   {recommended.reasons?.map((r, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px' }}>
-                      <Check size={12} style={{ color: 'var(--color-success)', marginTop: '2px', flexShrink: 0 }} />
+                      <Check size={13} style={{ color: 'var(--ink)', marginTop: '1px', flexShrink: 0 }} />
                       {r}
                     </div>
                   ))}
@@ -142,9 +155,42 @@ export default function DispatchPage() {
               </div>
             )}
 
-            {/* Candidate comparison table */}
+            {/* Resource package */}
+            {recommended && (
+              <div className="card">
+                <div style={{
+                  fontSize: '11px', fontWeight: 700, color: 'var(--muted)',
+                  textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px',
+                }}>
+                  Resource Package
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                  {[
+                    { icon: <Users size={18} />, count: recommended.available_officers, label: 'Officers' },
+                    { icon: <Car size={18} />,   count: recommended.available_vehicles,  label: 'Vehicles' },
+                    { icon: <Truck size={18} />, count: recommended.available_tow_trucks, label: 'Tow Trucks' },
+                    { icon: <Shield size={18} />,count: recommended.available_barricades, label: 'Barricades' },
+                  ].map(({ icon, count, label }) => (
+                    <div key={label} style={{
+                      background: 'var(--bg)', borderRadius: '14px', padding: '14px',
+                      display: 'flex', flexDirection: 'column', gap: '8px',
+                    }}>
+                      <span style={{ color: 'var(--muted)' }}>{icon}</span>
+                      <div style={{ fontSize: '26px', fontWeight: 800, letterSpacing: '-0.02em' }}>{count}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 500 }}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Candidate comparison */}
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)', fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{
+                padding: '14px 20px', borderBottom: '1px solid var(--border)',
+                fontSize: '12px', fontWeight: 700, color: 'var(--muted)',
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+              }}>
                 Candidate Comparison
               </div>
               <table className="data-table">
@@ -161,10 +207,17 @@ export default function DispatchPage() {
                   {candidates.map((s, i) => (
                     <tr key={s.station_id}>
                       <td>
-                        <span style={{ marginRight: '6px' }}>{i === 0 ? '★' : ' '}</span>
-                        {s.station_name}
+                        {i === 0 && (
+                          <span style={{
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                            width: 18, height: 18, borderRadius: '5px',
+                            background: 'var(--lime)', fontSize: '10px', fontWeight: 700,
+                            marginRight: '8px',
+                          }}>★</span>
+                        )}
+                        <span style={{ fontWeight: i === 0 ? 600 : 400 }}>{s.station_name}</span>
                       </td>
-                      <td style={{ minWidth: '120px' }}>
+                      <td style={{ minWidth: '140px' }}>
                         <ReadinessBar score={Number(s.readiness_score)} />
                       </td>
                       <td>{s.available_officers}</td>
@@ -176,42 +229,25 @@ export default function DispatchPage() {
               </table>
             </div>
 
-            {/* Resource package */}
-            {recommended && (
-              <div className="card">
-                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
-                  Resource Package
-                </div>
-                <div style={{ display: 'flex', gap: '24px', fontSize: '13px', flexWrap: 'wrap' }}>
-                  {[
-                    { emoji: '👮', count: recommended.available_officers, label: 'Officers' },
-                    { emoji: '🚗', count: recommended.available_vehicles, label: 'Patrol Vehicles' },
-                    { emoji: '🚛', count: recommended.available_tow_trucks, label: 'Tow Trucks' },
-                    { emoji: '🚧', count: recommended.available_barricades, label: 'Barricades' },
-                  ].map(({ emoji, count, label }) => (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>{emoji}</span>
-                      <strong>{count}</strong>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>{label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Error */}
             {dispatchError && (
-              <div style={{ padding: '10px 14px', background: 'rgba(229,62,62,0.08)', border: '1px solid rgba(229,62,62,0.2)', borderRadius: '8px', fontSize: '12px', color: 'var(--p1)' }}>
+              <div style={{
+                padding: '12px 16px',
+                background: 'rgba(229,62,62,0.08)',
+                border: '1px solid rgba(229,62,62,0.2)',
+                borderRadius: '12px', fontSize: '12px', color: 'var(--err)',
+                fontWeight: 500,
+              }}>
                 {dispatchError}
               </div>
             )}
 
             {/* Action buttons */}
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 id="confirm-dispatch-btn"
-                className="btn-primary"
-                style={{ flex: 1, justifyContent: 'center', padding: '14px' }}
+                className="btn-accent"
+                style={{ flex: 1, justifyContent: 'center', padding: '14px', fontSize: '14px' }}
                 onClick={() => setShowConfirm(true)}
                 disabled={!recommended}
               >
@@ -227,20 +263,27 @@ export default function DispatchPage() {
             </div>
           </div>
 
-          {/* Confirmation dialog — second explicit click */}
+          {/* Confirmation dialog */}
           {showConfirm && recommended && (
             <div className="dialog-overlay" role="dialog" aria-modal="true">
               <div className="dialog-content">
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '20px' }}>
-                  <AlertTriangle size={20} style={{ color: 'var(--color-warning)', flexShrink: 0, marginTop: '2px' }} />
+                  <div style={{
+                    width: 36, height: 36, borderRadius: '10px',
+                    background: 'rgba(246,173,85,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <AlertTriangle size={18} style={{ color: 'var(--warn)' }} />
+                  </div>
                   <div>
-                    <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '8px' }}>Confirm Dispatch</h3>
-                    <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-                      Dispatch <strong>{recommended.available_officers} officers</strong> and{' '}
-                      <strong>{recommended.available_vehicles} vehicles</strong> from{' '}
-                      <strong>{recommended.station_name}</strong> to incident <strong>{incidentId}</strong>?
+                    <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '8px' }}>Confirm Dispatch</h3>
+                    <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: 1.6 }}>
+                      Dispatch <strong style={{ color: 'var(--ink)' }}>{recommended.available_officers} officers</strong> and{' '}
+                      <strong style={{ color: 'var(--ink)' }}>{recommended.available_vehicles} vehicles</strong> from{' '}
+                      <strong style={{ color: 'var(--ink)' }}>{recommended.station_name}</strong> to incident{' '}
+                      <strong style={{ color: 'var(--ink)' }}>{incidentId}</strong>?
                       <br /><br />
-                      This action will deduct resources from the station. It cannot be undone automatically.
+                      This action deducts resources from the station and cannot be undone automatically.
                     </p>
                   </div>
                 </div>
@@ -254,7 +297,9 @@ export default function DispatchPage() {
                     onClick={handleConfirmDispatch}
                     disabled={isDispatching}
                   >
-                    {isDispatching ? <><Loader2 size={13} className="animate-spin" /> Dispatching…</> : 'Confirm Dispatch'}
+                    {isDispatching
+                      ? <><Loader2 size={13} className="animate-spin" /> Dispatching…</>
+                      : 'Confirm Dispatch'}
                   </button>
                 </div>
               </div>
@@ -266,8 +311,8 @@ export default function DispatchPage() {
             <>
               <div className="drawer-overlay" onClick={() => setShowOverrideDrawer(false)} />
               <div className="drawer">
-                <h3 style={{ fontSize: '15px', fontWeight: 700 }}>Override Dispatch</h3>
-                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: 700 }}>Override Dispatch</h3>
+                <p style={{ fontSize: '12px', color: 'var(--muted)' }}>
                   Select an alternate station and provide a mandatory reason. Minimum 20 characters.
                 </p>
 
@@ -296,7 +341,10 @@ export default function DispatchPage() {
                     placeholder="Explain why you are overriding the AI recommendation (min. 20 characters)…"
                     rows={4}
                   />
-                  <span style={{ fontSize: '10px', color: overrideReason.length < 20 ? 'var(--p1)' : 'var(--color-text-secondary)' }}>
+                  <span style={{
+                    fontSize: '10px',
+                    color: overrideReason.length < 20 ? 'var(--err)' : 'var(--muted)',
+                  }}>
                     {overrideReason.length} / 20 min characters
                   </span>
                 </div>
@@ -318,20 +366,14 @@ export default function DispatchPage() {
               </div>
             </>
           )}
-        </main>
       </div>
-    </div>
+    </>
   );
 }
 
-function PageShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="main-area">
-        <TopBar title="Dispatch" />
-        <main className="page-content">{children}</main>
-      </div>
-    </div>
-  );
+function PageShell({ incidentId, children }: { incidentId: string; children: React.ReactNode }) {
+    <>
+      <PageHeading title={`Dispatch — ${incidentId}`} />
+      <div className="flex-1 px-7 pb-7 overflow-auto">{children}</div>
+    </>
 }

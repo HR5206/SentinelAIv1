@@ -20,9 +20,9 @@ export function ConfidenceArc({ value, label, size = 90 }: ConfidenceArcProps) {
   const dashoffset = circumference - (clamp / 100) * circumference;
 
   const strokeColor =
-    clamp >= 80 ? 'var(--color-success)' :
-    clamp >= 60 ? 'var(--color-warning)' :
-    'var(--color-danger)';
+    clamp >= 80 ? 'var(--ok)' :
+    clamp >= 60 ? 'var(--warn)' :
+    'var(--err)';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
@@ -31,7 +31,7 @@ export function ConfidenceArc({ value, label, size = 90 }: ConfidenceArcProps) {
         <circle
           cx={cx} cy={cy} r={r}
           fill="none"
-          stroke="var(--color-border)"
+          stroke="var(--border)"
           strokeWidth="8"
         />
         {/* Arc */}
@@ -48,7 +48,7 @@ export function ConfidenceArc({ value, label, size = 90 }: ConfidenceArcProps) {
         <text
           x={cx} y={cy}
           className="confidence-arc-value"
-          style={{ fontSize: size < 80 ? '14px' : '18px', fontWeight: 700, fill: 'var(--color-text-primary)', textAnchor: 'middle', dominantBaseline: 'middle' }}
+          style={{ fontSize: size < 80 ? '14px' : '18px', fontWeight: 700, fill: 'var(--ink)', textAnchor: 'middle', dominantBaseline: 'middle' }}
         >
           {Math.round(clamp)}%
         </text>

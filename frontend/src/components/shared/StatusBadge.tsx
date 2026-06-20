@@ -1,59 +1,39 @@
-'use client';
-
-/**
- * StatusBadge — pill badge for incident priority (P1–P4) or status strings.
- * PROHIBITED: gradients, glow, neon colors. Just clean pill shapes.
- */
-
-type Priority = 'P1' | 'P2' | 'P3' | 'P4';
-type IncidentStatus =
-  | 'REPORTED' | 'UNDER_ASSESSMENT' | 'RESOURCES_ASSIGNED'
-  | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED' | 'CANCELLED';
-
 interface StatusBadgeProps {
-  priority?: Priority;
-  status?: IncidentStatus | string;
-  className?: string;
+  priority?: 'P1' | 'P2' | 'P3' | 'P4';
+  status?: 'Reported' | 'Under Assessment' | 'Resources Assigned' | 'In Progress' | 'Resolved' | 'Closed' | 'Cancelled';
 }
 
-const PRIORITY_CLASSES: Record<Priority, string> = {
-  P1: 'badge badge-p1',
-  P2: 'badge badge-p2',
-  P3: 'badge badge-p3',
-  P4: 'badge badge-p4',
+const PRIORITY_COLORS = {
+  P1: { bg: '#FEE2E2', text: '#DC2626', label: 'P1' },  // red
+  P2: { bg: '#FEF3C7', text: '#D97706', label: 'P2' },  // amber
+  P3: { bg: '#FEF9C3', text: '#A16207', label: 'P3' },  // yellow
+  P4: { bg: '#DBEAFE', text: '#1D4ED8', label: 'P4' },  // blue
 };
 
-const STATUS_CLASSES: Record<string, string> = {
-  REPORTED: 'badge badge-reported',
-  UNDER_ASSESSMENT: 'badge badge-under-assessment',
-  RESOURCES_ASSIGNED: 'badge badge-resources-assigned',
-  IN_PROGRESS: 'badge badge-in-progress',
-  RESOLVED: 'badge badge-resolved',
-  CLOSED: 'badge badge-closed',
-  CANCELLED: 'badge badge-cancelled',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  UNDER_ASSESSMENT: 'Assessing',
-  RESOURCES_ASSIGNED: 'Assigned',
-  IN_PROGRESS: 'Active',
-};
-
-export function StatusBadge({ priority, status, className = '' }: StatusBadgeProps) {
+export function StatusBadge({ priority, status }: StatusBadgeProps) {
   if (priority) {
+    const config = PRIORITY_COLORS[priority];
     return (
-      <span className={`${PRIORITY_CLASSES[priority] ?? 'badge'} ${className}`}>
-        {priority}
+      <span style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '3px 10px',
+        borderRadius: '9999px',
+        fontSize: '11px',
+        fontWeight: 700,
+        backgroundColor: config?.bg || '#F3F4F6',
+        color: config?.text || '#111111',
+        letterSpacing: '0.03em',
+      }}>
+        {config?.label || priority}
       </span>
     );
   }
+
   if (status) {
-    const label = STATUS_LABELS[status] ?? status.replace(/_/g, ' ');
-    return (
-      <span className={`${STATUS_CLASSES[status] ?? 'badge badge-reported'} ${className}`}>
-        {label}
-      </span>
-    );
+    const className = `status-badge badge-${status.toLowerCase().replace(/\s+/g, '-')}`;
+    return <span className={className}>{status}</span>;
   }
+
   return null;
 }

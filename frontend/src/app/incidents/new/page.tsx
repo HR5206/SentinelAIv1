@@ -1,9 +1,8 @@
 'use client';
 import { useState, useRef, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopBar } from '@/components/layout/TopBar';
 import { CopilotPanel } from '@/components/copilot/CopilotPanel';
+import { PageHeading } from '@/components/layout/PageHeading';
 import { api, PredictResponse } from '@/lib/api';
 import { Mic, MicOff, Type, Loader2 } from 'lucide-react';
 import type { ApiError } from '@/lib/api';
@@ -165,11 +164,9 @@ export default function NewIncidentPage() {
   );
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="main-area">
-        <TopBar title="New Incident" />
-        <main className="page-content">
+    <>
+      <PageHeading title="New Incident" />
+      <div className="flex-1 px-7 pb-7 overflow-auto">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '24px', maxWidth: '1280px' }}>
             {/* LEFT: Input form */}
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -349,8 +346,7 @@ export default function NewIncidentPage() {
               />
             </div>
           </div>
-        </main>
       </div>
-    </div>
+    </>
   );
 }

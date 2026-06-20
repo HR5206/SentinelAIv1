@@ -1,102 +1,93 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
-import { LogOut, ChevronDown } from 'lucide-react';
+import { LogOut, ChevronDown, Bell } from 'lucide-react';
 
 interface TopBarProps {
   title?: string;
+  actions?: React.ReactNode;
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  ADMIN: 'rgba(229,62,62,0.12)',
-  SUPERVISOR: 'rgba(246,173,85,0.15)',
-  OPERATOR: 'rgba(217,240,106,0.2)',
-  STATION_OFFICER: 'rgba(66,153,225,0.12)',
-};
-const ROLE_TEXT_COLORS: Record<string, string> = {
-  ADMIN: '#C53030',
-  SUPERVISOR: '#C05621',
-  OPERATOR: '#5A7200',
-  STATION_OFFICER: '#2B6CB0',
-};
-
-export function TopBar({ title }: TopBarProps) {
+export function TopBar({ title, actions }: TopBarProps) {
   const { user, logout } = useAuth();
   const [now, setNow] = useState<Date>(new Date());
   const [menuOpen, setMenuOpen] = useState(false);
-
   const [mounted, setMounted] = useState(false);
 
-  // Live clock — updates every second
   useEffect(() => {
     setMounted(true);
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const formattedDate = now.toLocaleDateString('en-IN', {
-    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
-  });
   const formattedTime = now.toLocaleTimeString('en-IN', {
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  });
+  const formattedDate = now.toLocaleDateString('en-IN', {
+    weekday: 'short', day: 'numeric', month: 'short',
   });
 
   return (
     <header className="topbar">
+      {/* Left — title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         {title && (
-          <h1 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-            {title}
-          </h1>
+          <h1 className="section-heading" style={{ fontSize: '18px' }}>{title}</h1>
         )}
+        {actions}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        {/* Live clock */}
-        <div style={{ textAlign: 'right', minWidth: '80px' }}>
-          {mounted && (
-            <>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-                {formattedTime}
-              </div>
-              <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-                {formattedDate}
-              </div>
-            </>
-          )}
-        </div>
+      {/* Right — clock + user */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Clock */}
+        {mounted && (
+          <div style={{ textAlign: 'right' }}>
+            <div style={{
+              fontSize: '13px', fontWeight: 600, color: 'var(--ink)',
+              fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em',
+            }}>
+              {formattedTime}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--muted)' }}>
+              {formattedDate}
+            </div>
+          </div>
+        )}
 
-        {/* User menu */}
+        {/* Bell */}
+        <button style={{
+          width: 36, height: 36, borderRadius: '10px',
+          border: '1px solid var(--border)', background: 'var(--surface)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', color: 'var(--muted)',
+        }}>
+          <Bell size={15} />
+        </button>
+
+        {/* User pill */}
         {user && (
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setMenuOpen(o => !o)}
               style={{
                 display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'none', border: '1px solid var(--color-border)',
-                borderRadius: '9999px', padding: '6px 12px 6px 8px',
-                cursor: 'pointer', fontSize: '13px',
+                background: 'var(--surface)', border: '1px solid var(--border)',
+                borderRadius: '9999px', padding: '5px 12px 5px 6px',
+                cursor: 'pointer',
               }}
             >
-              {/* Avatar */}
               <div style={{
-                width: '24px', height: '24px', borderRadius: '50%',
-                background: 'var(--color-text-primary)',
+                width: 26, height: 26, borderRadius: '50%',
+                background: 'var(--ink)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#FFFFFF', fontSize: '10px', fontWeight: 700,
+                color: '#fff', fontSize: '10px', fontWeight: 700,
               }}>
                 {user.username.charAt(0).toUpperCase()}
               </div>
-              <span style={{ fontWeight: 500 }}>{user.username}</span>
-              <span style={{
-                padding: '2px 8px', borderRadius: '9999px',
-                background: ROLE_COLORS[user.role] ?? 'var(--color-border)',
-                color: ROLE_TEXT_COLORS[user.role] ?? 'var(--color-text-secondary)',
-                fontSize: '10px', fontWeight: 700, letterSpacing: '0.04em',
-              }}>
-                {user.role}
+              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink)' }}>
+                {user.username}
               </span>
-              <ChevronDown size={12} style={{ color: 'var(--color-text-secondary)' }} />
+              <ChevronDown size={12} style={{ color: 'var(--muted)' }} />
             </button>
 
             {menuOpen && (
@@ -107,17 +98,17 @@ export function TopBar({ title }: TopBarProps) {
                 />
                 <div style={{
                   position: 'absolute', top: '110%', right: 0,
-                  background: 'var(--color-card)', border: '1px solid var(--color-border)',
-                  borderRadius: '12px', padding: '4px', minWidth: '160px', zIndex: 40,
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  borderRadius: '14px', padding: '6px', minWidth: '160px',
+                  zIndex: 40, boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                 }}>
                   <button
                     onClick={() => { logout(); setMenuOpen(false); }}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '8px',
-                      width: '100%', padding: '8px 12px', border: 'none',
-                      background: 'none', cursor: 'pointer', borderRadius: '8px',
-                      fontSize: '13px', color: 'var(--color-danger)',
+                      width: '100%', padding: '9px 12px', border: 'none',
+                      background: 'none', cursor: 'pointer', borderRadius: '9px',
+                      fontSize: '13px', color: 'var(--err)', fontWeight: 500,
                     }}
                   >
                     <LogOut size={14} />

@@ -1,12 +1,11 @@
 'use client';
 import { useState } from 'react';
 import useSWR from 'swr';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopBar } from '@/components/layout/TopBar';
+import { PageHeading } from '@/components/layout/PageHeading';
 import { LoadingState, ErrorState } from '@/components/shared/LoadingState';
 import { api, Station } from '@/lib/api';
 import { useSearchParams } from 'next/navigation';
-import { Pencil, Check, X } from 'lucide-react';
+import { Pencil, Check, X, Package } from 'lucide-react';
 import type { ApiError } from '@/lib/api';
 
 /**
@@ -68,18 +67,35 @@ export default function ResourcesPage() {
   };
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="main-area">
-        <TopBar title="Resource Command Center" />
-        <main className="page-content">
+    <>
+      <PageHeading title={
+        <>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              backgroundColor: '#CDFF50',
+              flexShrink: 0,
+            }}
+          >
+            <Package size={18} color="#111111" strokeWidth={2.5} />
+          </span>
+          Resource Command Center
+        </>
+      } />
+      <div className="flex-1 px-7 pb-7 overflow-auto">
           {/* Station selector */}
           <div style={{ marginBottom: '20px', maxWidth: '400px' }}>
             <div className="form-group">
               <label className="form-label">Select Station</label>
               <select
                 id="station-select"
-                className="select"
+                className="form-input"
+                style={{ borderRadius: '9999px', height: '38px', padding: '0 14px' }}
                 value={selectedStation}
                 onChange={e => setSelectedStation(e.target.value)}
               >
@@ -92,8 +108,8 @@ export default function ResourcesPage() {
           </div>
 
           {!selectedStation && (
-            <div style={{ padding: '48px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px' }}>
-              Select a station to view and manage resources.
+            <div style={{ marginTop: '48px' }}>
+              <EmptyState message="Select a station from the dropdown above to view and manage its inventory." />
             </div>
           )}
 
@@ -102,9 +118,9 @@ export default function ResourcesPage() {
 
           {station && (
             <div className="card" style={{ padding: 0, overflow: 'hidden', maxWidth: '800px' }}>
-              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ fontSize: '14px', fontWeight: 700 }}>{station.station_name}</h2>
-                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
                   Readiness: <strong>{Math.round(Number(station.readiness_score))}</strong>
                 </span>
               </div>
@@ -133,15 +149,16 @@ export default function ResourcesPage() {
                               min={0}
                               value={editValue}
                               onChange={e => setEditValue(e.target.value)}
-                              style={{ width: '80px', padding: '4px 8px', border: '1px solid var(--color-border)', borderRadius: '6px', fontSize: '13px' }}
+                              className="form-input"
+                              style={{ width: '80px', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', height: 'auto' }}
                               autoFocus
                             />
                           ) : (
                             row.total
                           )}
                         </td>
-                        <td style={{ color: 'var(--color-text-secondary)' }}>{row.available}</td>
-                        <td style={{ color: deployed > 0 ? 'var(--color-warning)' : 'var(--color-text-secondary)' }}>
+                        <td style={{ color: 'var(--muted)' }}>{row.available}</td>
+                        <td style={{ color: deployed > 0 ? 'var(--warn)' : 'var(--muted)' }}>
                           {deployed}
                         </td>
                         <td>
@@ -149,13 +166,13 @@ export default function ResourcesPage() {
                             <div style={{ display: 'flex', gap: '6px' }}>
                               <button
                                 onClick={() => handleSave(row.type, row.total)}
-                                style={{ padding: '4px 8px', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-success)' }}
+                                style={{ padding: '4px 8px', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--ok)' }}
                               >
                                 <Check size={14} />
                               </button>
                               <button
                                 onClick={() => { setEditRow(null); setSaveError(''); }}
-                                style={{ padding: '4px 8px', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}
+                                style={{ padding: '4px 8px', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--muted)' }}
                               >
                                 <X size={14} />
                               </button>
@@ -163,9 +180,11 @@ export default function ResourcesPage() {
                           ) : (
                             <button
                               onClick={() => handleEditClick(row.type, row.total)}
-                              style={{ padding: '4px 10px', border: '1px solid var(--color-border)', borderRadius: '6px', background: 'none', cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              style={{ padding: '6px 12px', border: '1px solid var(--color-border)', borderRadius: '9999px', background: '#FFFFFF', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: '#111111', transition: 'background 0.15s' }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = '#F5F5F3'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = '#FFFFFF'}
                             >
-                              <Pencil size={11} /> Edit
+                              <Pencil size={12} /> Edit
                             </button>
                           )}
                         </td>
@@ -186,7 +205,7 @@ export default function ResourcesPage() {
             <div className="dialog-overlay">
               <div className="dialog-content">
                 <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Confirm Inventory Reduction</h3>
-                <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '20px' }}>
+                <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '20px' }}>
                   Reducing <strong>{pendingEdit.type}</strong> total to <strong>{pendingEdit.newTotal}</strong>.
                   This change will be logged. Are you sure?
                 </p>
@@ -199,8 +218,7 @@ export default function ResourcesPage() {
               </div>
             </div>
           )}
-        </main>
       </div>
-    </div>
+    </>
   );
 }

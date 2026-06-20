@@ -2,7 +2,7 @@
 
 /**
  * lib/auth.tsx
- * Auth context — JWT stored in memory only (not localStorage).
+ * Auth context — JWT stored in localStorage.
  * Handles token refresh events and role-based access.
  */
 
@@ -24,15 +24,41 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setTokenState] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const logout = useCallback(async () => {
     try {
       if (getToken()) await api.auth.logout();
     } catch {}
+    if (typeof window !== 'undefined') localStorage.removeItem('sentinel_token');
     setToken(null);
     setTokenState(null);
     setUser(null);
+  }, []);
+
+  // Initialize from localStorage
+  useEffect(() => {
+    const initAuth = async () => {
+      if (typeof window === 'undefined') {
+        setIsLoading(false);
+        return;
+      }
+      
+      const storedToken = localStorage.getItem('sentinel_token');
+      if (storedToken) {
+        setToken(storedToken);
+        try {
+          const u = await api.auth.me();
+          setUser(u);
+          setTokenState(storedToken);
+        } catch (err) {
+          localStorage.removeItem('sentinel_token');
+          setToken(null);
+        }
+      }
+      setIsLoading(false);
+    };
+    initAuth();
   }, []);
 
   // Listen for auth expiry events
@@ -46,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const res = await api.auth.login(username, password);
+      if (typeof window !== 'undefined') localStorage.setItem('sentinel_token', res.access_token);
       setToken(res.access_token);
       setTokenState(res.access_token);
       setUser(res.user);

@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopBar } from '@/components/layout/TopBar';
+import { Search, Radio } from 'lucide-react';
+import { PageHeading } from '@/components/layout/PageHeading';
 import { ReadinessBar } from '@/components/shared/ReadinessBar';
 import { LoadingState, ErrorState } from '@/components/shared/LoadingState';
 import { useStations } from '@/hooks/useStations';
@@ -21,53 +21,91 @@ export default function StationsPage() {
     const matchFilter =
       filter === 'all' ? true :
       filter === 'high' ? score > 70 :
-      filter === 'mid' ? score >= 40 && score <= 70 :
+      filter === 'mid'  ? score >= 40 && score <= 70 :
       score < 40;
     return matchSearch && matchFilter;
   });
 
+  const FILTERS: { key: FilterLevel; label: string }[] = [
+    { key: 'all',  label: 'All' },
+    { key: 'high', label: 'High (>70)' },
+    { key: 'mid',  label: 'Medium (40–70)' },
+    { key: 'low',  label: 'Low (<40)' },
+  ];
+
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="main-area">
-        <TopBar title="Station Readiness" />
-        <main className="page-content">
-          {/* Controls */}
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center' }}>
-            <input
-              type="text"
-              className="input"
-              style={{ maxWidth: '300px' }}
-              placeholder="Search stations…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              id="station-search"
-            />
-            {(['all', 'high', 'mid', 'low'] as FilterLevel[]).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '9999px',
-                  border: '1px solid var(--color-border)',
-                  background: filter === f ? 'var(--color-text-primary)' : 'transparent',
-                  color: filter === f ? '#FFF' : 'var(--color-text-secondary)',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  textTransform: 'capitalize',
-                }}
-              >
-                {f === 'all' ? 'All' : f === 'high' ? 'High (>70)' : f === 'mid' ? 'Medium (40–70)' : 'Low (<40)'}
-              </button>
-            ))}
-            <span style={{ marginLeft: 'auto', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-              Showing {filtered.length} of {stations.length} stations
-            </span>
+    <>
+      <PageHeading title={
+        <>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              backgroundColor: '#CDFF50',
+              flexShrink: 0,
+            }}
+          >
+            <Radio size={18} color="#111111" strokeWidth={2.5} />
+          </span>
+          Station Network
+        </>
+      } />
+      <div className="flex-1 px-7 pb-7 overflow-auto">
+
+          {/* ── Page heading ─────────────────────────────────────────────── */}
+          <div style={{ marginBottom: '24px' }}>
+            <h2 style={{
+              fontSize: '26px', fontWeight: 800, color: 'var(--ink)',
+              letterSpacing: '-0.03em',
+            }}>
+              Stations &amp; Resources
+            </h2>
+            <p className="section-sub" style={{ marginTop: '4px' }}>
+              {filtered.length} of {stations.length} stations
+            </p>
           </div>
 
-          {/* Table */}
+          {/* ── Controls ─────────────────────────────────────────────────── */}
+          <div style={{
+            display: 'flex', gap: '10px', marginBottom: '20px',
+            alignItems: 'center', flexWrap: 'wrap',
+          }}>
+            {/* Search */}
+            <div style={{ position: 'relative', maxWidth: '280px', flex: '1 1 200px' }}>
+              <Search size={14} style={{
+                position: 'absolute', left: '12px', top: '50%',
+                transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none',
+              }} />
+              <input
+                type="text"
+                className="form-input"
+                style={{ paddingLeft: '34px', borderRadius: '9999px', height: '36px' }}
+                placeholder="Search stations…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                id="station-search"
+              />
+            </div>
+
+            {/* Filter pills */}
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+              {FILTERS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  className={`tab-pill ${filter === key ? 'active' : ''}`}
+                  onClick={() => setFilter(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Table ────────────────────────────────────────────────────── */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             {isLoading ? (
               <LoadingState message="Loading stations…" />
@@ -78,7 +116,7 @@ export default function StationsPage() {
                 <thead>
                   <tr>
                     <th>Station Name</th>
-                    <th style={{ minWidth: '200px' }}>Readiness</th>
+                    <th style={{ minWidth: '180px' }}>Readiness</th>
                     <th>Officers</th>
                     <th>Vehicles</th>
                     <th>Tow Trucks</th>
@@ -91,20 +129,31 @@ export default function StationsPage() {
                     <tr
                       key={station.station_id}
                       onClick={() => router.push(`/resources?station=${station.station_id}`)}
-                      style={{ cursor: 'pointer' }}
                     >
-                      <td style={{ fontWeight: 500 }}>{station.station_name}</td>
+                      <td style={{ fontWeight: 600 }}>{station.station_name}</td>
                       <td>
                         <ReadinessBar score={Number(station.readiness_score)} />
                       </td>
-                      <td>{station.available_officers}{station.total_officers ? ` / ${station.total_officers}` : ''}</td>
-                      <td>{station.available_vehicles}{station.total_vehicles ? ` / ${station.total_vehicles}` : ''}</td>
-                      <td>{station.available_tow_trucks}{station.total_tow_trucks ? ` / ${station.total_tow_trucks}` : ''}</td>
-                      <td>{station.available_barricades}{station.total_barricades ? ` / ${station.total_barricades}` : ''}</td>
+                      <td>
+                        {station.available_officers}
+                        {station.total_officers ? <span style={{ color: 'var(--muted)' }}> / {station.total_officers}</span> : ''}
+                      </td>
+                      <td>
+                        {station.available_vehicles}
+                        {station.total_vehicles ? <span style={{ color: 'var(--muted)' }}> / {station.total_vehicles}</span> : ''}
+                      </td>
+                      <td>
+                        {station.available_tow_trucks}
+                        {station.total_tow_trucks ? <span style={{ color: 'var(--muted)' }}> / {station.total_tow_trucks}</span> : ''}
+                      </td>
+                      <td>
+                        {station.available_barricades}
+                        {station.total_barricades ? <span style={{ color: 'var(--muted)' }}> / {station.total_barricades}</span> : ''}
+                      </td>
                       <td>
                         <span style={{
-                          fontSize: '12px', fontWeight: 600,
-                          color: station.active_incidents > 3 ? 'var(--p1)' : 'var(--color-text-primary)',
+                          fontSize: '12px', fontWeight: 700,
+                          color: station.active_incidents > 3 ? 'var(--err)' : 'var(--ink)',
                         }}>
                           {station.active_incidents}
                         </span>
@@ -115,8 +164,7 @@ export default function StationsPage() {
               </table>
             )}
           </div>
-        </main>
       </div>
-    </div>
+    </>
   );
 }

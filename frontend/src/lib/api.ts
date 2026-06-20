@@ -26,6 +26,9 @@ export function setToken(token: string | null) {
 }
 
 export function getToken(): string | null {
+  if (!_token && typeof window !== 'undefined') {
+    _token = localStorage.getItem('sentinel_token');
+  }
   return _token;
 }
 
@@ -43,8 +46,9 @@ async function request<T>(
     ...(options.headers as Record<string, string> || {}),
   };
 
-  if (_token) {
-    headers['Authorization'] = `Bearer ${_token}`;
+  const currentToken = getToken();
+  if (currentToken) {
+    headers['Authorization'] = `Bearer ${currentToken}`;
   }
 
   const response = await fetch(`${base}${url}`, {
