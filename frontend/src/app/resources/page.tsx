@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { PageHeading } from '@/components/layout/PageHeading';
-import { LoadingState, ErrorState } from '@/components/shared/LoadingState';
+import { LoadingState, ErrorState, EmptyState } from '@/components/shared/LoadingState';
 import { api, Station } from '@/lib/api';
 import { useSearchParams } from 'next/navigation';
 import { Pencil, Check, X, Package } from 'lucide-react';
@@ -61,7 +61,13 @@ export default function ResourcesPage() {
   };
 
   const commitEdit = async (type: string, newTotal: number) => {
-    // TODO: PUT /stations/{id} with updated total
+    try {
+      if (selectedStation) {
+        await api.stations.update(selectedStation, { [`total_${type}`]: newTotal });
+      }
+    } catch (e) {
+      setSaveError('Failed to update limits.');
+    }
     setEditRow(null);
     mutate();
   };

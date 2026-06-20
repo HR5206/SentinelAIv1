@@ -372,8 +372,10 @@ export default function DispatchPage() {
 }
 
 function PageShell({ incidentId, children }: { incidentId: string; children: React.ReactNode }) {
+  return (
     <>
       <PageHeading title={`Dispatch — ${incidentId}`} />
       <div className="flex-1 px-7 pb-7 overflow-auto">{children}</div>
     </>
+  );
 }

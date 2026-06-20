@@ -46,6 +46,10 @@ async function request<T>(
     ...(options.headers as Record<string, string> || {}),
   };
 
+  if (options.body instanceof FormData) {
+    delete headers['Content-Type'];
+  }
+
   const currentToken = getToken();
   if (currentToken) {
     headers['Authorization'] = `Bearer ${currentToken}`;
@@ -114,9 +118,14 @@ export const api = {
 
   incidents: {
     active: () => request<Incident[]>('/incidents/active'),
+    get: (id: string) => request<IncidentDetail>(`/incidents/${id}`),
+    list: (params?: { status?: string; limit?: number }) => {
+      const qs = params ? '?' + new URLSearchParams(params as Record<string, string>).toString() : '';
+      return request<Incident[]>(`/incidents${qs}`);
+    },
   },
 
-  // ─── Predict ───────────────────────────────────────────────────────────────
+  // ─── Predict & STT ─────────────────────────────────────────────────────────
 
   predict: {
     run: (payload: PredictPayload) =>
@@ -124,6 +133,14 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
+    stt: (audioBlob: Blob) => {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      return request<{ success: boolean; transcript: string }>('/stt', {
+        method: 'POST',
+        body: formData,
+      }, true); // useFastApi = true
+    },
   },
 
   // ─── Stations ──────────────────────────────────────────────────────────────
@@ -135,6 +152,11 @@ export const api = {
     },
     get: (stationId: string) =>
       request<Station>(`/stations/${stationId}`),
+    update: (stationId: string, body: Record<string, number>) =>
+      request<Station>(`/stations/${stationId}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      }),
     allocate: (stationId: string, body: AllocateBody) =>
       request<AllocateResponse>(`/stations/${stationId}/allocate`, {
         method: 'POST',
@@ -181,6 +203,11 @@ export const api = {
   feedback: {
     submit: (body: FeedbackBody) =>
       request<FeedbackResponse>('/incident-feedback', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    submitExtended: (body: ExtendedFeedbackBody) =>
+      request<FeedbackResponse>('/feedback', {
         method: 'POST',
         body: JSON.stringify(body),
       }),
@@ -279,6 +306,32 @@ export interface Incident {
   longitude: number | null;
   predicted_priority?: string;
   corridor?: string;
+  location?: string | null;
+  event_cause?: string | null;
+  vehicle_type?: string | null;
+  reported_at?: string;
+  created_at?: string;
+}
+
+export interface IncidentDetail extends Incident {
+  event_cause: string | null;
+  vehicle_type: string | null;
+  location: string | null;
+  priority_indicators: string[] | null;
+  reported_by: string | null;
+  reported_at: string;
+  resolved_at: string | null;
+  closed_at: string | null;
+  raw_transcript: string | null;
+  prediction?: {
+    predicted_priority: string;
+    priority_confidence: number;
+    predicted_resolution_minutes: number;
+    road_closure_probability: number;
+    road_closure_recommendation: string;
+    priority_reasons: string[];
+    closure_reasons: string[];
+  } | null;
 }
 
 export interface PredictPayload {
@@ -430,6 +483,16 @@ export interface FeedbackBody {
   road_closure_occurred: boolean;
   outcome_description?: string;
   operator_id?: string;
+}
+
+export interface ExtendedFeedbackBody {
+  incident_id: string;
+  actual_priority: string;
+  actual_closure: boolean;
+  actual_resolution_time: number;
+  officers_used: number;
+  barricades_used: number;
+  remarks?: string;
 }
 
 export interface FeedbackResponse {

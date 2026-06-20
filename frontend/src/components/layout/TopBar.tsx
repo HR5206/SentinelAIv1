@@ -12,6 +12,7 @@ export function TopBar({ title, actions }: TopBarProps) {
   const { user, logout } = useAuth();
   const [now, setNow] = useState<Date>(new Date());
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -55,14 +56,39 @@ export function TopBar({ title, actions }: TopBarProps) {
         )}
 
         {/* Bell */}
-        <button style={{
-          width: 36, height: 36, borderRadius: '10px',
-          border: '1px solid var(--border)', background: 'var(--surface)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', color: 'var(--muted)',
-        }}>
-          <Bell size={15} />
-        </button>
+        <div style={{ position: 'relative' }}>
+          <button 
+            onClick={() => setNotificationsOpen(o => !o)}
+            style={{
+              width: 36, height: 36, borderRadius: '10px',
+              border: '1px solid var(--border)', background: 'var(--surface)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', color: 'var(--muted)',
+            }}>
+            <Bell size={15} />
+          </button>
+
+          {notificationsOpen && (
+            <>
+              <div
+                style={{ position: 'fixed', inset: 0, zIndex: 30 }}
+                onClick={() => setNotificationsOpen(false)}
+              />
+              <div style={{
+                position: 'absolute', top: '110%', right: 0,
+                background: 'var(--surface)', border: '1px solid var(--border)',
+                borderRadius: '14px', padding: '12px', width: '280px',
+                zIndex: 40, boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                display: 'flex', flexDirection: 'column', gap: '8px'
+              }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 700, borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>Recent Alerts</h4>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', padding: '8px 0' }}>
+                  No new system alerts.
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* User pill */}
         {user && (

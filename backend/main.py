@@ -217,6 +217,50 @@ def extract_location(request: LocationExtractRequest):
     }
 
 
+@app.post("/stt")
+async def stt_endpoint(audio: UploadFile = File(...)):
+    """
+    Direct Speech-to-Text endpoint for transcriptions.
+    """
+    try:
+        if not audio or not audio.filename:
+            raise HTTPException(status_code=400, detail="No audio file provided")
+            
+        allowed_extensions = {".mp3", ".wav", ".m4a", ".flac", ".ogg", ".aac", ".webm", ".mp4"}
+        file_extension = os.path.splitext(audio.filename)[1].lower() or ".webm"
+        if file_extension not in allowed_extensions:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported audio format: {file_extension}. Allowed: {', '.join(allowed_extensions)}"
+            )
+            
+        safe_filename = f"stt-{uuid.uuid4().hex}{file_extension}"
+        temp_file_path = os.path.join(TEMP_UPLOADS_DIR, safe_filename)
+        
+        try:
+            with open(temp_file_path, "wb") as buffer:
+                contents = await audio.read()
+                buffer.write(contents)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save upload: {str(e)}")
+            
+        try:
+            transcript = transcribe_audio_file(temp_file_path)
+            return {"success": True, "transcript": transcript}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Transcription error: {str(e)}")
+        finally:
+            if os.path.exists(temp_file_path):
+                try:
+                    os.remove(temp_file_path)
+                except Exception:
+                    pass
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
 @app.post("/voice-report")
 def voice_report(request: VoiceReportRequest):
     transcript = request.transcript.strip()

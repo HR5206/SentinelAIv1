@@ -68,12 +68,17 @@ export default function NewIncidentPage() {
       const recorder = new MediaRecorder(stream);
       audioChunksRef.current = [];
       recorder.ondataavailable = (e) => { if (e.data.size) audioChunksRef.current.push(e.data); };
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
-        // In production: POST audio blob to /stt (FastAPI)
-        // For now: placeholder transcript
-        const demoTranscript = 'Heavy vehicle breakdown on Tumkur Road near Peenya flyover. Lane blocked. Peak hour traffic impacted.';
-        setTranscript(demoTranscript);
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        try {
+          const res = await api.predict.stt(audioBlob);
+          if (res.success && res.transcript) {
+            setTranscript(res.transcript);
+          }
+        } catch (err) {
+          setRecError('Transcription failed. Please try typing.');
+        }
       };
       recorder.start();
       mediaRecorderRef.current = recorder;

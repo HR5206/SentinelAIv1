@@ -67,52 +67,91 @@ function createStationMarker(readinessScore: number): HTMLElement {
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
-  P1: '#FF3366', // Neon Red/Pink
-  P2: '#FF9900', // Neon Orange
-  P3: '#FFCC00', // Neon Yellow
-  P4: '#00E5FF', // Neon Cyan
+  P1: '#FF3366', // Critical — Red
+  P2: '#FF9900', // High — Orange
+  P3: '#FFCC00', // Medium — Yellow
+  P4: '#00E5FF', // Low — Cyan
 };
 
-function createIncidentMarker(priority: string): HTMLElement {
-  const color = PRIORITY_COLORS[priority] ?? '#6B7280';
+// In-progress gets a distinctive blue
+const STATUS_COLOR_OVERRIDE: Record<string, string> = {
+  IN_PROGRESS: '#3B82F6',
+};
+
+function getIncidentColor(priority: string, status?: string): string {
+  if (status && STATUS_COLOR_OVERRIDE[status]) return STATUS_COLOR_OVERRIDE[status];
+  return PRIORITY_COLORS[priority] ?? '#6B7280';
+}
+
+// Inject pulse keyframe once into document
+if (typeof document !== 'undefined') {
+  const styleId = 'sentinel-pulse-style';
+  if (!document.getElementById(styleId)) {
+    const s = document.createElement('style');
+    s.id = styleId;
+    s.textContent = `
+      @keyframes sentinelPulse {
+        0%   { transform: scale(0.8); opacity: 0.8; }
+        50%  { transform: scale(1.6); opacity: 0.2; }
+        100% { transform: scale(0.8); opacity: 0.0; }
+      }
+    `;
+    document.head.appendChild(s);
+  }
+}
+
+function createIncidentMarker(priority: string, status?: string): HTMLElement {
+  const color = getIncidentColor(priority, status);
+  const isP1 = priority === 'P1';
 
   const wrapper = document.createElement('div');
   wrapper.style.cssText = `
     position: relative;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
   `;
 
-  const glow = document.createElement('div');
-  glow.style.cssText = `
+  // Pulsing halo — faster for P1
+  const pulse = document.createElement('div');
+  pulse.style.cssText = `
     position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     background: ${color};
-    opacity: 0.3;
-    filter: blur(5px);
-    transform: rotate(45deg);
+    opacity: 0.7;
+    animation: sentinelPulse ${isP1 ? '1.0s' : '2.2s'} ease-out infinite;
   `;
 
-  const pin = document.createElement('div');
-  pin.innerHTML = `
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="10" y="2" width="11" height="11" transform="rotate(45 10 2)" fill="#111111" stroke="${color}" stroke-width="2.5" />
-      <circle cx="10" cy="10" r="2.5" fill="${color}" />
-    </svg>
+  // Static ring
+  const ring = document.createElement('div');
+  ring.style.cssText = `
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2.5px solid ${color};
+    background: rgba(17,17,17,0.9);
   `;
-  pin.style.cssText = `
-    position: relative;
+
+  // Center dot
+  const dot = document.createElement('div');
+  dot.style.cssText = `
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: ${color};
     z-index: 1;
-    line-height: 0;
   `;
 
-  wrapper.appendChild(glow);
-  wrapper.appendChild(pin);
+  wrapper.appendChild(pulse);
+  wrapper.appendChild(ring);
+  wrapper.appendChild(dot);
   return wrapper;
 }
 
@@ -249,6 +288,7 @@ interface BengaluruMapProps {
   incidents?: Incident[];
   riskZones?: RiskZone[];
   onStationClick?: (station: Station) => void;
+  onIncidentClick?: (incident: Incident) => void;
   height?: string;
   showLayerControls?: boolean;
 }
@@ -258,6 +298,7 @@ export function BengaluruMap({
   incidents = [],
   riskZones = [],
   onStationClick,
+  onIncidentClick,
   height = '480px',
   showLayerControls = true,
 }: BengaluruMapProps) {
@@ -268,7 +309,7 @@ export function BengaluruMap({
   const incidentMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
   const [layers, setLayers] = useState({
-    stations: true,
+    stations: false,
     incidents: true,
     heatmap: false,
     coverage: false,
@@ -387,17 +428,18 @@ export function BengaluruMap({
     stations.forEach(station => {
       if (!station.latitude || !station.longitude) return;
 
+      if (!station.latitude || !station.longitude) return;
       const score = Number(station.readiness_score);
       const el = createStationMarker(score);
 
       const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
-        .setLngLat([station.longitude, station.latitude])
+        .setLngLat([station.longitude!, station.latitude!])
         .addTo(map);
 
       el.addEventListener('mouseenter', () => {
         if (!hoverCardRef.current || !mapContainer.current) return;
         hoverCardRef.current.innerHTML = renderStationCard(station as any);
-        const point = map.project([station.longitude, station.latitude]);
+        const point = map.project([station.longitude!, station.latitude!]);
         const rect = mapContainer.current.getBoundingClientRect();
         
         let left = rect.left + point.x;
@@ -435,16 +477,16 @@ export function BengaluruMap({
       if (!inc.latitude || !inc.longitude) return;
 
       const p = inc.predicted_priority || 'P4';
-      const el = createIncidentMarker(p as 'P1' | 'P2' | 'P3' | 'P4');
+      const el = createIncidentMarker(p, inc.status);
 
-      const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+      const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
         .setLngLat([inc.longitude, inc.latitude])
         .addTo(map);
 
       el.addEventListener('mouseenter', () => {
         if (!hoverCardRef.current || !mapContainer.current) return;
         hoverCardRef.current.innerHTML = renderIncidentCard(inc as any);
-        const point = map.project([inc.longitude, inc.latitude]);
+        const point = map.project([inc.longitude!, inc.latitude!]);
         const rect = mapContainer.current.getBoundingClientRect();
 
         let left = rect.left + point.x;
@@ -460,9 +502,18 @@ export function BengaluruMap({
         if (hoverCardRef.current) hoverCardRef.current.style.opacity = '0';
       });
 
+      el.addEventListener('click', () => {
+        if (onIncidentClick) {
+          onIncidentClick(inc);
+        } else {
+          // Default: navigate to incident detail
+          window.location.href = `/incidents/${inc.incident_id}`;
+        }
+      });
+
       incidentMarkersRef.current.push(marker);
     });
-  }, [incidents, layers.incidents, isMapLoaded]);
+  }, [incidents, layers.incidents, onIncidentClick, isMapLoaded]);
 
   // ── Toggle heatmap visibility ──
   useEffect(() => {

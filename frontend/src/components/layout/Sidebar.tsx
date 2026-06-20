@@ -7,7 +7,6 @@ import {
   Package, BarChart2, Clock, Plus, Settings, LogOut, User as UserIcon
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'; // if not exists I will just use title
 
 const NAV = [
   { href: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },

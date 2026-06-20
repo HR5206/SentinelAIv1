@@ -52,9 +52,26 @@ def rebuild_faiss_index():
 @jwt_required()
 @require_role('ADMIN')
 def get_model_status():
-    """Query status of loaded ML models."""
+    """Query status of loaded ML models from the inference service."""
+    import requests
+    import os
+    
+    fastapi_url = os.getenv("NEXT_PUBLIC_FASTAPI_URL", "http://localhost:8000")
+    try:
+        # Live network request to ML inference service
+        resp = requests.get(f"{fastapi_url}/")
+        is_up = resp.status_code == 200
+        message = resp.json().get("message", "OK") if is_up else "DOWN"
+    except Exception:
+        is_up = False
+        message = "UNREACHABLE"
+
     status = ml_service.get_health_status()
     return jsonify({
+        "status": "OK" if is_up else "DOWN",
+        "uptime": "live" if is_up else "offline",
+        "model_version": "1.0",
+        "ml_message": message,
         "priority_model": "loaded" if status["priority_model"] else "missing",
         "resolution_model": "loaded" if status["resolution_model"] else "missing",
         "closure_model": "loaded" if status["closure_model"] else "missing",

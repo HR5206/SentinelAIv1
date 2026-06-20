@@ -150,6 +150,7 @@ def create_app(config_override: dict = None) -> Flask:
     from routes.risk import bp as risk_bp
     from routes.admin import bp as admin_bp
     from routes.incidents import incidents_bp
+    from routes.extended_feedback import extended_feedback_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(auth_bp)
@@ -162,6 +163,7 @@ def create_app(config_override: dict = None) -> Flask:
     app.register_blueprint(risk_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(incidents_bp)
+    app.register_blueprint(extended_feedback_bp)
 
     logger.info("[App] SentinelAI Flask API ready")
     return app
